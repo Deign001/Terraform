@@ -30,7 +30,7 @@ resource "aws_lb" "myalb" {
   subnets            = [aws_subnet.public1.id, aws_subnet.public2.id]
   security_groups    = [aws_security_group.albsg.id]
 }
-# Security group for ALB
+# https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/security_group
 resource "aws_security_group" "albsg" {
   name        = "albsg"
   description = "security group for alb"
@@ -49,8 +49,8 @@ resource "aws_security_group" "albsg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-# Create ALB target group
-resource "aws_lb_target_group" "projecttg" {
+# https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/lb_target_group
+resource "aws_lb_target_group" "tg" {
   name     = "projecttg"
   port     = 80
   protocol = "HTTP"
@@ -58,22 +58,23 @@ resource "aws_lb_target_group" "projecttg" {
 
   depends_on = [aws_vpc.main]
 }
-# Create target attachments
+# Chttps://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/lb_target_group_attachment
 resource "aws_lb_target_group_attachment" "tgattach1" {
-  target_group_arn = aws_lb_target_group.projecttg.arn
+  target_group_arn = aws_lb_target_group.tg.arn
   target_id        = aws_instance.web_tier1.id
   port             = 80
 
   depends_on = [aws_instance.web_tier1]
 }
-# Create target attachments
+# https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/lb_target_group_attachment
 resource "aws_lb_target_group_attachment" "tgattach2" {
-  target_group_arn = aws_lb_target_group.projecttg.arn
+  target_group_arn = aws_lb_target_group.tg.arn
   target_id        = aws_instance.web_tier2.id
   port             = 80
 
   depends_on = [aws_instance.web_tier2]
 }
+#https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/lb_listener
 resource "aws_lb_listener" "listenerlb" {
   load_balancer_arn = aws_lb.myalb.arn
   port              = "80"
@@ -81,7 +82,7 @@ resource "aws_lb_listener" "listenerlb" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.projecttg.arn
+    target_group_arn = aws_lb_target_group.tg.arn
   }
 }
 
@@ -208,7 +209,7 @@ resource "aws_route_table_association" "my_public2_nated2" {
   subnet_id      = aws_subnet.private2.id
   route_table_id = aws_route_table.my_public2_nated.id
 }
-# Security group for web tier
+# https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/security_group
 resource "aws_security_group" "web_tier" {
   name        = "web_tier"
   description = "web and SSH allowed"
@@ -253,6 +254,7 @@ resource "aws_instance" "web_tier1" {
         echo "<html><body><h1>Web Tier 1, Success!</h1></body></html>" > /var/www/html/index.html
         EOF
 }
+#https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/data-sources/instance
 resource "aws_instance" "web_tier2" {
   ami                         = "ami-090fa75af13c156b4"
   key_name 		      = "launchtime"
@@ -269,6 +271,7 @@ resource "aws_instance" "web_tier2" {
         echo "<html><body><h1>Web Tier 2, Success!</h1></body></html>" > /var/www/html/index.html
         EOF
 }
+#https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/db_instance
 resource "aws_db_instance" "the_db" {
   allocated_storage      = 10
   engine                 = "mysql"
@@ -282,7 +285,7 @@ resource "aws_db_instance" "the_db" {
   parameter_group_name   = "default.mysql5.7"
   skip_final_snapshot    = true
 }
-# Security group for db tier
+# https://registry.terraform.io/providers/hashicorp/aws/3.3.0/docs/resources/db_security_group
 resource "aws_security_group" "db_tier" {
   name        = "db_sg"
   description = "allow traffic from Web Tier & SSH"
